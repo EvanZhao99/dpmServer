@@ -4,6 +4,8 @@ let path = require('path')
 let express = require('express')
 var bodyParser = require('body-parser')
 let jszip = require('jszip')
+let formidable = require('formidable')
+let util = require('util')
 
 let app = express()
 let jsonParse = bodyParser.json()
@@ -85,6 +87,29 @@ function updateProjectProgress(projectId) {
     })
     fs.writeFileSync(path.join(__dirname, 'store/project.json'),JSON.stringify(projectList))
 }
+
+// 登陆
+app.post('/login', jsonParse,(req, res) => {
+    let data = JSON.parse(fs.readFileSync(path.join(__dirname, 'store/user.json')).toString())
+    res.setHeader('Content-Type', 'application/json;charset=utf-8')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    let user = data.filter(item => {
+        return (item.account == req.body.account && item.password == req.body.password)
+    })[0]
+    if(user) {
+        res.end(JSON.stringify({
+            code: 0,
+            msg: 'success',
+            data: user
+        }))
+    } else {
+        res.end(JSON.stringify({code: 1, msg: '账号或密码错误'}))
+    }
+})
+
+
+
+
 
 // 工作记录---------------------------------------------------------------------------
 // 查询report
@@ -177,6 +202,15 @@ app.post('/deleteModule', jsonParse, (req, res) => {
 })
 
 // 用户 ------------------------------------
+// 获取用户详情
+app.post('/userDetail', jsonParse,(req, res) => {
+    let data = fs.readFileSync(path.join(__dirname, 'store/user.json'))
+    data = getQueryResult(data, req.body)
+    console.log(data)
+    res.setHeader('Content-Type', 'application/json;charset=utf-8')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.end(JSON.stringify(data[0]))
+})
 // 查询用户
 app.post('/userList', jsonParse,(req, res) => {
     let data = fs.readFileSync(path.join(__dirname, 'store/user.json'))
@@ -291,6 +325,24 @@ app.get('/download', (req, res) => {
             
         }
     })
+})
+// 上传图片
+app.post('/upload', (req, res) => {
+    var form = new formidable.IncomingForm();
+
+    form.parse(req, function(err, fields, files) {
+      res.writeHead(200, {'content-type': 'text/plain'});
+      res.write('received upload:\n\n');
+      fs.writeFileSync(path.join(__dirname, 'img/' + files.file.name), files.file)
+      fs.rename(files.file.path, path.join(__dirname, 'img/' + files.file.name), function(err) {
+        if (err) throw err;
+        // 删除临时文件夹文件, 
+        fs.unlink(files.file.path, function() {
+           if (err) throw err;
+        });
+      });
+      res.end(JSON.stringify({code: 0, msg: 'success', data:{fileName: files.file.name, file:files}}));
+    });
 })
 
 app.listen(3000, (err, data) => {
