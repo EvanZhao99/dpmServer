@@ -1,1 +1,1 @@
-[{"startTime":"2019-6-4","endTime":"2019-6-4","name":"1","description":"1","module":["201950001","201950002","201950003"],"projectCode":"201950001","progress":4.666666666666667,"moduleDesc":[{"label":"首页","value":"201950001"},{"label":"视频","value":"201950002"}]}]
+[{"name":"项目1","description":"项目1","startTime":"2019-6-8","endTime":"2019-6-8","module":["201950002","201950001"],"projectCode":"201950001","progress":3.5,"moduleDesc":[{"label":"首页模块","value":"201950001"}]}]

@@ -76,7 +76,7 @@ function updateProjectProgress(projectId) {
                 moduleList.map(m => {
                     if(moduleId == m.moduleId) {
                         console.log('m', m.progress)
-                        totalProgress =  totalProgress + m.progress || 0
+                        totalProgress =  totalProgress + (m.progress || 0)
                         length++
                     }
                 })
@@ -115,7 +115,15 @@ app.post('/login', jsonParse,(req, res) => {
 // 查询report
 app.post('/reportList', jsonParse,(req, res) => {
     let data = fs.readFileSync(path.join(__dirname, 'store/report.json'))
-    data = getQueryResult(data, req.body)
+    let userList = JSON.parse(fs.readFileSync(path.join(__dirname, 'store/user.json')).toString())
+    let user = userList.filter(item => {
+        return item.userId == req.body.userId
+    })[0]
+    if(user.account == 'admin') {
+        data = JSON.parse(data.toString() || '[]')
+    } else {
+        data = getQueryResult(data, req.body)
+    }
     res.setHeader('Content-Type', 'application/json;charset=utf-8')
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.end(JSON.stringify(data))
