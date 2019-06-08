@@ -116,14 +116,27 @@ app.post('/login', jsonParse,(req, res) => {
 app.post('/reportList', jsonParse,(req, res) => {
     let data = fs.readFileSync(path.join(__dirname, 'store/report.json'))
     let userList = JSON.parse(fs.readFileSync(path.join(__dirname, 'store/user.json')).toString())
+    let moduleList = JSON.parse(fs.readFileSync(path.join(__dirname, 'store/module.json')).toString())
     let user = userList.filter(item => {
         return item.userId == req.body.userId
     })[0]
-    if(user.account == 'admin') {
-        data = JSON.parse(data.toString() || '[]')
-    } else {
-        data = getQueryResult(data, req.body)
-    }
+    data = getQueryResult(data, req.body)
+    data.map(item => {
+        // 获取用户名称
+        let user = userList.filter(user => {
+            return user.userId === item.userId
+        })[0]
+        if(user) {
+            item.username = user.username
+        }
+        // 获取任务名称
+        let module = moduleList.filter(module => {
+            return module.userId === item.userId
+        })[0]
+        if(module) {
+            item.module = module
+        }
+    })
     res.setHeader('Content-Type', 'application/json;charset=utf-8')
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.end(JSON.stringify(data))
@@ -165,7 +178,15 @@ app.post('/addReport', jsonParse, (req, res) => {
 // 查询任务
 app.post('/moduleList', jsonParse,(req, res) => {
     let data = fs.readFileSync(path.join(__dirname, 'store/module.json'))
-    data = getQueryResult(data, req.body)
+    let userList = JSON.parse(fs.readFileSync(path.join(__dirname, 'store/user.json')).toString())
+    let user = userList.filter(item => {
+        return item.userId == req.body.userId
+    })[0]
+    if(user.account == 'admin') {
+        data = JSON.parse(data.toString() || '[]')
+    } else {
+        data = getQueryResult(data, req.body)
+    }
     res.setHeader('Content-Type', 'application/json;charset=utf-8')
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.end(JSON.stringify(data))
